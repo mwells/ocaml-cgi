@@ -1,0 +1,6 @@
+name = "ocamlcgi"
+version = "0.1"
+description = "scgi implementation"
+requires = "lwt,lwt.unix"
+archive(byte) = "ocamlcgi.cma"
+archive(native) = "ocamlcgi.cmxa"
