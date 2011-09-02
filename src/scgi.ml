@@ -153,7 +153,7 @@ struct
   let of_stream stream =
     Netstring.decode stream >>= fun headers -> Scgi_headers.of_string headers |> function
       | ("CONTENT_LENGTH", content_length) :: rest ->
-          (* CONTENT_LENGTH must be first header accorinding to spec *)
+          (* CONTENT_LENGTH must be first header according to spec *)
           Lwt.catch
             (fun () -> Lwt.return @< int_of_string content_length)
             (fun _  -> raise_lwt (Failure ("Invalid content_length: [" ^ content_length ^ "]")))
@@ -236,9 +236,14 @@ let handler name inet_addr port f =
                  )
                  (status_header :: response.headers);
 
+               (* Blank line between headers and body *)
+               Lwt_io.write ouch "\r\n" >>= fun () ->
                Lwt_io.write_chars ouch response.body
              )
              (fun e -> (* TODO log it *) Lwt.return ())
+           >>= (fun () ->
+             (* The server closes the connection *)
+             Lwt_io.close ouch)
           )
       )
   in
