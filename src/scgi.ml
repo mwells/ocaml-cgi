@@ -110,6 +110,23 @@ struct
   let to_string = snd @<< values
 end
 
+(** HTTP headers *)
+module Http_header =
+struct
+  type t =
+      [ `Content_length of int
+      | `Content_type of string
+      | `Status of Http_status.t
+      | `Other of string * string
+      ]
+
+  let to_string = function
+      | `Content_length l -> Printf.sprintf "Content-Length: %d\r\n" l
+      | `Content_type   s -> Printf.sprintf "Content-Type: %s\r\n" s
+      | `Status         s -> Printf.sprintf "Status: %d %s\r\n" (Http_status.to_int s) (Http_status.to_string s)
+      | `Other      (n,v) -> n ^ ":" ^ v  (* Ought to define more *)
+end
+
 (** SCGI request headers *)
 module Scgi_headers =
 struct
@@ -196,10 +213,15 @@ end
 (** SCGI response *)
 module Scgi_response =
 struct
+  type body =
+      [ `Stream of int option * char Lwt_stream.t  (* content-length, stream *)
+      | `String of string  (* content-length added automatically *)
+      ]
+
   type t = {
     status  : Http_status.t;
-    headers : (string * string) list;
-    body    : char Lwt_stream.t
+    headers : Http_header.t list;
+    body    : body
   }
 end
 
@@ -216,29 +238,42 @@ let handler name inet_addr port f =
                 print_endline (Printexc.to_string e ^ "\n" ^ Printexc.get_backtrace ());
                 Lwt.return
                   { Scgi_response.status = `Internal_server_error;
-                    headers = ["Content-Type", "text/plain"];
-                    body = Lwt_stream.of_string @< Printexc.to_string e;
+                    headers = [`Content_type "text/plain"];
+                    body = `String (Printexc.to_string e);
                   }
               ) >>= fun response ->
            Lwt.catch
              (fun () ->
                let open Scgi_response in
-               let status_header =
-                 "Status",
-                 Printf.sprintf "%d %s"
-                   (Http_status.to_int response.status)
-                   (Http_status.to_string response.status)
+
+               (* Add content length from body if not already in the headers *)
+               let is_content_length_in_headers =
+                 List.exists
+                   (function `Content_length _ -> true | _ -> false)
+                   response.headers
+               in
+               let response_headers =
+                 if is_content_length_in_headers then
+                   response.headers
+                 else
+                   match response.body with
+                     | `Stream (Some l, _) -> `Content_length l :: response.headers
+                     | `String s           -> `Content_length (String.length s) :: response.headers
+                     | `Stream (None, _)   -> response.headers
                in
 
-               List.iter
-                 (fun (name, value) ->
-                   Lwt.ignore_result (Lwt_io.write ouch (Printf.sprintf "%s: %s\r\n" name value))
-                 )
-                 (status_header :: response.headers);
+               (* Write headers *)
+               Lwt_util.iter
+                 (Lwt_io.write ouch @<< Http_header.to_string)
+                 (`Status response.status :: response_headers) >>= fun () ->
 
                (* Blank line between headers and body *)
                Lwt_io.write ouch "\r\n" >>= fun () ->
-               Lwt_io.write_chars ouch response.body
+
+               (* Write the body *)
+               match response.body with
+                 | `Stream (_, s) -> Lwt_io.write_chars ouch s
+                 | `String s      -> Lwt_io.write ouch s
              )
              (fun e -> (* TODO log it *) Lwt.return ())
            >>= (fun () ->

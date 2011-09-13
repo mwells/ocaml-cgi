@@ -23,8 +23,8 @@ let _ =
   Scgi.handler "hello" !addr !port (fun _request ->
     Lwt.return
       { Scgi.Scgi_response.status = `Ok;
-        headers = ["Content-Type", "text/plain"];
-        body = Lwt_stream.of_string "Hello world"
+        headers = [`Content_type "text/plain"];
+        body = `String "Hello world"
       }
   );
 
