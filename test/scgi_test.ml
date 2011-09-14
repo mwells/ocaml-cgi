@@ -32,17 +32,19 @@ let tests =
      assert_int "same length list" (List.length result) 4
    );
    "scgi_request", (fun () ->
-     Scgi.Scgi_request.of_stream @< Lwt_stream.of_string @< mock_request () >>= fun r ->
-       let open Scgi.Scgi_request in
-       assert_int "content_length" 27 r.content_length >>= fun () ->
+     lwt r = Scgi.Scgi_request.of_stream @< Lwt_stream.of_string @< mock_request () in
+     let open Scgi.Scgi_request in
+     lwt () = assert_int "content_length" 27 r.content_length in
+     lwt () =
        assert_equal
          ~printer:Scgi.Http_method.to_string
          ~msg:"method"
          ~expected:`POST
-         r.request_method >>= fun () ->
-       assert_string "uri" "/deepthought" r.request_uri >>= fun () ->
-       assert_int ~msg:"remaining headers length" ~expected:0 @< List.length r.request_headers >>= fun () ->
-       Lazy.force r.content >>= (assert_string ~msg:"content" ~expected:"What is the answer to life?")
+         r.request_method
+     in
+     lwt () = assert_string "uri" "/deepthought" r.request_uri in
+     lwt () = assert_int ~msg:"remaining headers length" ~expected:0 @< List.length r.request_headers in
+     Lazy.force r.content >>= (assert_string ~msg:"content" ~expected:"What is the answer to life?")
    );
   ]
 

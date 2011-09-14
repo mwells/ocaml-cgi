@@ -23,7 +23,8 @@ let test_runner tests =
   Lwt.join @< List.map
     (fun (name, fn) ->
       progress ();
-      Lwt.catch fn (fun e ->
+      try_lwt fn ()
+      with e ->
         let msg =
           Printf.sprintf "\n\nIn test [%s]:\n%s\n%s"
             name
@@ -31,7 +32,6 @@ let test_runner tests =
             (Printexc.get_backtrace ())
         in
         failwith msg
-      )
     )
     tests
 
