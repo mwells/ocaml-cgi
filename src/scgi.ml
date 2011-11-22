@@ -124,7 +124,7 @@ struct
       | `Content_length l -> Printf.sprintf "Content-Length: %d\r\n" l
       | `Content_type   s -> Printf.sprintf "Content-Type: %s\r\n" s
       | `Status         s -> Printf.sprintf "Status: %d %s\r\n" (Http_status.to_int s) (Http_status.to_string s)
-      | `Other      (n,v) -> n ^ ":" ^ v  (* Ought to define more *)
+      | `Other      (n,v) -> Printf.sprintf "%s: %s\r\n" n v (* Ought to define more *)
 end
 
 (** SCGI request headers *)
