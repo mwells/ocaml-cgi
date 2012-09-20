@@ -1,14 +1,15 @@
-NAME = ocamlcgi
-SRCS := $(NAME)_common.ml netstring.ml scgi.ml
+NAME = scgi
+SRCS := $(shell ls *.ml | grep -v myocamlbuild | xargs)
+MLI_SRCS = $(shell ls *.ml | grep -v myocamlbuild | grep -v compatability | xargs)
 CMAS := $(NAME).cma
 CMXAS := $(NAME).cmxa
-CMIS := $(SRCS:.ml=.cmi)
 LIBS = $(CMAS) $(CMXAS)
-BUILD = $(addprefix _build/,$(LIBS)) $(addprefix _build/,$(CMIS)) _build/$(NAME).a
+MLIS = $(MLI_SRCS:.ml=.mli)
+BUILD = $(addprefix _build/,$(LIBS)) $(addprefix _build/,$(MLIS)) _build/$(NAME).cmi _build/$(NAME).a
 
 .PHONY: all install uninstall clean
 
-all: $(NAME).mllib
+all: $(NAME).mlpack
 	ocamlbuild -tag debug $(LIBS)
 
 install:
@@ -18,9 +19,8 @@ uninstall:
 	ocamlfind remove $(NAME)
 
 clean:
-	rm -f $(NAME).mllib
+	rm -f $(NAME).mlpack
 	ocamlbuild -clean
 
-$(NAME).mllib:
-	echo $(SRCS) | perl -pe 's/ /\n/g'  | perl -pe 's/^./\U$$&/g' | sed -e "s/\.ml//g" > $@
-
+$(NAME).mlpack:
+	echo $(SRCS) | perl -pe 's/ /\n/g'  | perl -pe 's/^./\U$$&/g' | sed -e "s/\.ml//g" | grep -v myocamlbuild | sort > $@

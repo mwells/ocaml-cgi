@@ -1,6 +1,7 @@
 (** Tests for the netstring module *)
-open Ocamlcgi_common
 open Test_common
+open Lwt
+open Scgi
 
 let tests =
   ["decode", fun () ->

@@ -3,7 +3,8 @@
  *  E.g. ./_build/hello_scgi.byte
  *)
 
-open Ocamlcgi_common
+open Scgi
+open Lwt
 
 let _ =
   (* Command line options *)
@@ -16,17 +17,27 @@ let _ =
          "--addr", Arg.Set_string addr, Printf.sprintf " ip address to bind (default: %s)" !addr;
         ]
     )
-    (failwith @<< Printf.sprintf "Unknown argument: [%s]")
+    (fun s -> failwith (Printf.sprintf "Unknown argument: [%s]" s))
     "try --help";
 
   (* Start the handler *)
-  Scgi.handler "hello" !addr !port (fun _request ->
+  Server.handler "hello" !addr !port (fun r ->
     Lwt.return
-      { Scgi.Scgi_response.status = `Ok;
+      { Response.status = `Ok;
         headers = [`Content_type "text/plain"];
-        body = `String "Hello world"
+        body = `String ("Hello world: " ^ Request.path r);
       }
   );
 
   (* Run forever in foreground. *)
-  Lwt_main.run (fst @< Lwt.wait ())
+  Lwt_main.run (fst (Lwt.wait ()))
+
+
+
+
+
+
+
+
+
+

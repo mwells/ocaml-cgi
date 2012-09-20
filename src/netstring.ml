@@ -1,6 +1,5 @@
 (** Netstring implementation *)
-
-open Ocamlcgi_common
+open Lwt
 
 let zero_ascii = int_of_char '0'
 
@@ -23,7 +22,7 @@ let decode stream =
        | Some ',' ->
          let b = Buffer.create size in
          List.iter (Buffer.add_char b) chars;
-         Lwt.return @< Buffer.contents b
+         Lwt.return (Buffer.contents b)
        | Some c   -> raise_lwt (Failure (Printf.sprintf "Expected comma, but got %c" c))
        | None     -> raise_lwt (Failure "Empty when comma expected")
     )
