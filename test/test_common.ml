@@ -14,6 +14,10 @@ let assert_equal ~printer ~msg ~expected actual =
 let assert_string ~msg ~expected actual = assert_equal (fun s -> s) msg expected actual
 let assert_int  ~msg ~expected actual = assert_equal string_of_int msg expected actual
 
+let string_option_printer = function
+  | None -> "None"
+  | Some s -> Printf.sprintf "Some \"%s\"" s
+
 let test_runner tests =
   let progress () =
     output_char stderr '.';

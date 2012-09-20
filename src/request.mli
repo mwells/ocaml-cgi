@@ -34,7 +34,7 @@ val contents : t -> string Lwt.t
 val param : ?meth:[ `GET | `POST ] -> ?default:string -> t  -> string -> string Lwt.t
 val params_get : t -> (string * string) list
 val header : t -> header -> string list
-val cookie : t -> string -> string
+val cookie : t -> string -> string option
 
 val to_string : t -> string Lwt.t
   (** For debugging *)

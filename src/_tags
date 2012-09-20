@@ -1,4 +1,4 @@
-<**/*.ml*> : syntax_camlp4o,pkg_lwt.syntax,pkg_lwt,pkg_lwt.unix,pkg_uri
+<**/*.ml*> : syntax_camlp4o,pkg_lwt.syntax,pkg_lwt,pkg_lwt.unix,pkg_uri,pkg_batteries
 <headers.cmx> : for-pack(Scgi)
 <http_status.cmx> : for-pack(Scgi)
 <http_header.cmx> : for-pack(Scgi)

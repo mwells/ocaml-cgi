@@ -1,5 +1,6 @@
 (** SCGI request *)
 open Lwt
+open Batteries
 
 type t = {
   content_length : int;
@@ -171,4 +172,12 @@ let params_get t = t.get_params
 
 let header t name = header' t.headers name
 
-let cookie t name = raise Not_found
+let cookie t name =
+  match header' t.headers `Http_cookie with
+    | [] -> None
+    | cookies :: _ ->
+        try
+          Some (String.nsplit ~by:"; " cookies
+                   |> List.map (String.split ~by:"=")
+                   |> List.assoc name)
+        with Not_found -> None

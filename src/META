@@ -1,6 +1,6 @@
 name = "scgi"
 version = "0.2"
 description = "scgi implementation"
-requires = "lwt,lwt.unix,uri"
+requires = "lwt,lwt.unix,uri,batteries"
 archive(byte) = "scgi.cma"
 archive(native) = "scgi.cmxa"
