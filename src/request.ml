@@ -27,6 +27,7 @@ type header =
   | `Http_connection
   | `Http_host
   | `Http_authorization
+  | `Http_date
   | `Server_name
   | `Server_port
   | `Remote_port
@@ -52,6 +53,7 @@ let header' headers name =
       | `Http_connection -> "http_connection"
       | `Http_host -> "http_host"
       | `Http_authorization -> "http_authorization"
+      | `Http_date -> "http_date"
       | `Server_name -> "server_name"
       | `Server_port -> "server_port"
       | `Remote_port -> "remote_port"
