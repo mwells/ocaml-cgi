@@ -15,6 +15,7 @@ type header =
   | `Http_content_length
   | `Http_connection
   | `Http_host
+  | `Http_authorization
   | `Server_name
   | `Server_port
   | `Remote_port
