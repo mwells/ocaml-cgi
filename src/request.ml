@@ -26,6 +26,8 @@ type header =
   | `Http_content_length
   | `Http_connection
   | `Http_host
+  | `Http_authorization
+  | `Http_date
   | `Server_name
   | `Server_port
   | `Remote_port
@@ -50,6 +52,8 @@ let header' headers name =
       | `Http_content_length -> "http_content_length"
       | `Http_connection -> "http_connection"
       | `Http_host -> "http_host"
+      | `Http_authorization -> "http_authorization"
+      | `Http_date -> "http_date"
       | `Server_name -> "server_name"
       | `Server_port -> "server_port"
       | `Remote_port -> "remote_port"
@@ -60,6 +64,9 @@ let header' headers name =
   List.map snd
     (List.find_all (fun (n, _) -> n = name) headers)
 
+let concat_query_values l =
+  List.map (fun (k, vl) -> (k, String.concat "," vl)) l
+
 let make content_length meth uri headers content =
   let headers = List.map (fun (k, v) -> String.lowercase k, v) headers in
   { content_length;
@@ -67,12 +74,12 @@ let make content_length meth uri headers content =
     uri;
     headers = headers;
     content;
-    get_params = Uri.query uri;
+    get_params = concat_query_values (Uri.query uri);
     post_params =
       match meth with
         | `POST when header' headers `Http_content_type = ["application/x-www-form-urlencoded"] ->
             content >>= fun s ->
-            Lwt.return (Uri.query_of_encoded s)
+            Lwt.return (concat_query_values (Uri.query_of_encoded s))
         | _ -> Lwt.return []
   }
 
