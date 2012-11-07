@@ -9,6 +9,7 @@ type header =
   | `Http_referer
   | `Http_accept
   | `Http_content_type
+  | `Http_content_md5
   | `Http_user_agent
   | `Http_origin
   | `Http_cache_control
@@ -17,6 +18,9 @@ type header =
   | `Http_host
   | `Http_authorization
   | `Http_date
+  | `Http_x_forwarded_proto
+  | `Http_x_forwarded_port
+  | `Http_x_forwarded_for
   | `Server_name
   | `Server_port
   | `Remote_port

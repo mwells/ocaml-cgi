@@ -20,6 +20,7 @@ type header =
   | `Http_referer
   | `Http_accept
   | `Http_content_type
+  | `Http_content_md5
   | `Http_user_agent
   | `Http_origin
   | `Http_cache_control
@@ -28,6 +29,9 @@ type header =
   | `Http_host
   | `Http_authorization
   | `Http_date
+  | `Http_x_forwarded_proto
+  | `Http_x_forwarded_port
+  | `Http_x_forwarded_for
   | `Server_name
   | `Server_port
   | `Remote_port
@@ -46,6 +50,7 @@ let header' headers name =
       | `Http_referer -> "http_referer"
       | `Http_accept -> "http_accept"
       | `Http_content_type -> "http_content_type"
+      | `Http_content_md5 -> "http_content_md5"
       | `Http_user_agent -> "http_user_agent"
       | `Http_origin -> "http_origin"
       | `Http_cache_control -> "http_cache_control"
@@ -54,6 +59,9 @@ let header' headers name =
       | `Http_host -> "http_host"
       | `Http_authorization -> "http_authorization"
       | `Http_date -> "http_date"
+      | `Http_x_forwarded_proto -> "http_x_forwarded_proto"
+      | `Http_x_forwarded_port -> "http_x_forwarded_port"
+      | `Http_x_forwarded_for -> "http_x_forwarded_for"
       | `Server_name -> "server_name"
       | `Server_port -> "server_port"
       | `Remote_port -> "remote_port"
