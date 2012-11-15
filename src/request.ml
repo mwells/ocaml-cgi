@@ -156,7 +156,13 @@ let meth t = t.meth
 let uri t = t.uri
 let path t = Uri.path t.uri
 let contents t = t.content
-let param ?meth ?default t name =
+
+let param ?meth t name =
+  match List.Exceptionless.assoc name t.get_params with
+    | None -> t.post_params >|= List.Exceptionless.assoc name
+    | r -> Lwt.return r
+
+let param_exn ?meth ?default t name =
   Lwt.catch
     (fun () ->
       let rec loop = function
@@ -184,6 +190,7 @@ let param ?meth ?default t name =
     )
 
 let params_get t = t.get_params
+let params_post t = t.post_params
 
 let header t name = header' t.headers name
 

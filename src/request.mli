@@ -37,8 +37,10 @@ val meth : t -> Http_method.t
 val uri : t -> Uri.t
 val path : t -> string
 val contents : t -> string Lwt.t
-val param : ?meth:[ `GET | `POST ] -> ?default:string -> t  -> string -> string Lwt.t
+val param : ?meth:[ `GET | `POST ] -> t -> string -> string option Lwt.t
+val param_exn : ?meth:[ `GET | `POST ] -> ?default:string -> t -> string -> string Lwt.t
 val params_get : t -> (string * string) list
+val params_post : t -> (string * string) list Lwt.t
 val header : t -> header -> string list
 val cookie : t -> string -> string option
 
