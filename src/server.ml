@@ -1,6 +1,7 @@
 type server_name = string
 type inet_addr = string
 type port = int
+type socket_filename = string
 
 let default_read_error_handler exn =
   prerr_endline (Printexc.to_string exn ^ "\n" ^ Printexc.get_backtrace ());
@@ -15,15 +16,13 @@ let default_write_error_handler exn =
   Lwt.return ()
 
 let handler
-    ?(read_error_handler=default_read_error_handler)
-    ?(write_error_handler=default_write_error_handler)
-    name
-    inet_addr
-    port
+    ~read_error_handler
+    ~write_error_handler
+    ~sockaddr
+    ~name
     f =
   let _server =
-    Lwt_io.establish_server
-      (Unix.ADDR_INET (Unix.inet_addr_of_string inet_addr, port))
+    Lwt_io.establish_server sockaddr
       (fun (inch, ouch) ->
         Lwt.ignore_result (
           lwt response =
@@ -62,16 +61,45 @@ let handler
             lwt () = Lwt_io.write ouch "\r\n" in
 
             (* Write the body *)
-            lwt () =
-              match response.body with
+            match response.body with
                 | `Stream (_, s) -> Lwt_io.write_chars ouch s
                 | `String s      -> Lwt_io.write ouch s
-            in
 
-            (* The server closes the connection *)
-            Lwt_io.close ouch
           with e -> write_error_handler e
+          finally
+            (* The server closes the connection *)
+             try_lwt
+                lwt () =
+                Lwt_io.close ouch in
+                Lwt_io.close inch
+             with e -> write_error_handler e
+
         )  (* Lwt.ignore_result *)
       )  (* fun (inch, ouch) -> *)
   in
-  print_endline (Printf.sprintf "Started [%s] listening on %s:%d" name inet_addr port)
+  ()
+
+let handler_inet
+    ?(read_error_handler=default_read_error_handler)
+    ?(write_error_handler=default_write_error_handler)
+    name
+    inet_addr
+    port
+    f =
+    handler
+      ~read_error_handler
+      ~write_error_handler
+      ~sockaddr: (Unix.ADDR_INET (Unix.inet_addr_of_string inet_addr, port))
+      ~name f
+
+let handler_sock
+    ?(read_error_handler=default_read_error_handler)
+    ?(write_error_handler=default_write_error_handler)
+    name
+    socket_filename
+    f =
+    handler
+      ~read_error_handler
+      ~write_error_handler
+      ~sockaddr: (Unix.ADDR_UNIX socket_filename)
+      ~name f
