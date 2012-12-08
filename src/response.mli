@@ -11,3 +11,6 @@ type t = {
 }
 
 val make : status:Http_status.t -> ?headers:(Http_header.t list) -> ?body:body -> unit -> t
+
+val to_string : ?body_max:int -> t -> string
+  (** For debugging *)
