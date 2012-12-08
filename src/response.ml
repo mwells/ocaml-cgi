@@ -18,8 +18,7 @@ let make ~status ?(headers=[]) ?(body=`String "") () =
 
 let to_string ?(body_max=1000) t =
   let headers_str = String.concat "; " (List.map (fun h -> String.trim (Http_header.to_string h))  t.headers) in
-  Lwt.return (
-    Printf.sprintf
+  Printf.sprintf
       "{ http_status: %d (%s); headers: [ %s]; body: \"%s\";}"
       (Http_status.to_int t.status)
       (Http_status.to_string t.status)
@@ -27,4 +26,3 @@ let to_string ?(body_max=1000) t =
       (match t.body with `String b -> String.sub b 0 (min (String.length b) body_max)
                        | `Stream (Some c, _) -> Printf.sprintf "stream of %d bytes length" c
                        | `Stream _ -> "[stream of unknown length]")
-  )
