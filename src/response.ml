@@ -20,6 +20,9 @@ let status_int t = Http_status.to_int t.status
 
 let status_string t = Http_status.to_string t.status
 
+let add_header header t =
+  { t with headers = header :: t.headers }
+
 let to_string ?(body_max=1000) t =
   let headers_str = String.concat "; " (List.map (fun h -> String.trim (Http_header.to_string h))  t.headers) in
   Printf.sprintf
