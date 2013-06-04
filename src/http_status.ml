@@ -38,6 +38,7 @@ type t =
     | `Service_unavailable
     | `Gateway_timeout
     | `Http_version_not_supported
+    | `Custom_code of (int * string)
     ]
 
 let values = function
@@ -78,6 +79,7 @@ let values = function
   | `Service_unavailable             -> 503, "Service Unavailable"
   | `Gateway_timeout                 -> 504, "Gateway Timeout"
   | `Http_version_not_supported      -> 505, "HTTP Version Not Supported"
+  | `Custom_code (code, name)        -> code, name
 
 let to_int    v = fst (values v)
 let to_string v = snd (values v)
