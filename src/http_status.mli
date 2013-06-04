@@ -4,6 +4,7 @@ type t =
     | `Bad_request
     | `Conflict
     | `Created
+    | `Custom_code of (int * string)
     | `Expectation_failed
     | `Forbidden
     | `Found

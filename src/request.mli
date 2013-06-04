@@ -9,12 +9,18 @@ type header =
   | `Http_referer
   | `Http_accept
   | `Http_content_type
+  | `Http_content_md5
   | `Http_user_agent
   | `Http_origin
   | `Http_cache_control
   | `Http_content_length
   | `Http_connection
   | `Http_host
+  | `Http_authorization
+  | `Http_date
+  | `Http_x_forwarded_proto
+  | `Http_x_forwarded_port
+  | `Http_x_forwarded_for
   | `Server_name
   | `Server_port
   | `Remote_port
@@ -31,8 +37,10 @@ val meth : t -> Http_method.t
 val uri : t -> Uri.t
 val path : t -> string
 val contents : t -> string Lwt.t
-val param : ?meth:[ `GET | `POST ] -> ?default:string -> t  -> string -> string Lwt.t
+val param : ?meth:[ `GET | `POST ] -> t -> string -> string option Lwt.t
+val param_exn : ?meth:[ `GET | `POST ] -> ?default:string -> t -> string -> string Lwt.t
 val params_get : t -> (string * string) list
+val params_post : t -> (string * string) list Lwt.t
 val header : t -> header -> string list
 val cookie : t -> string -> string option
 

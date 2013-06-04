@@ -20,12 +20,18 @@ type header =
   | `Http_referer
   | `Http_accept
   | `Http_content_type
+  | `Http_content_md5
   | `Http_user_agent
   | `Http_origin
   | `Http_cache_control
   | `Http_content_length
   | `Http_connection
   | `Http_host
+  | `Http_authorization
+  | `Http_date
+  | `Http_x_forwarded_proto
+  | `Http_x_forwarded_port
+  | `Http_x_forwarded_for
   | `Server_name
   | `Server_port
   | `Remote_port
@@ -44,12 +50,18 @@ let header' headers name =
       | `Http_referer -> "http_referer"
       | `Http_accept -> "http_accept"
       | `Http_content_type -> "http_content_type"
+      | `Http_content_md5 -> "http_content_md5"
       | `Http_user_agent -> "http_user_agent"
       | `Http_origin -> "http_origin"
       | `Http_cache_control -> "http_cache_control"
       | `Http_content_length -> "http_content_length"
       | `Http_connection -> "http_connection"
       | `Http_host -> "http_host"
+      | `Http_authorization -> "http_authorization"
+      | `Http_date -> "http_date"
+      | `Http_x_forwarded_proto -> "http_x_forwarded_proto"
+      | `Http_x_forwarded_port -> "http_x_forwarded_port"
+      | `Http_x_forwarded_for -> "http_x_forwarded_for"
       | `Server_name -> "server_name"
       | `Server_port -> "server_port"
       | `Remote_port -> "remote_port"
@@ -60,6 +72,9 @@ let header' headers name =
   List.map snd
     (List.find_all (fun (n, _) -> n = name) headers)
 
+let concat_query_values l =
+  List.map (fun (k, vl) -> (k, String.concat "," vl)) l
+
 let make content_length meth uri headers content =
   let headers = List.map (fun (k, v) -> String.lowercase k, v) headers in
   { content_length;
@@ -67,12 +82,12 @@ let make content_length meth uri headers content =
     uri;
     headers = headers;
     content;
-    get_params = Uri.query uri;
+    get_params = concat_query_values (Uri.query uri);
     post_params =
       match meth with
         | `POST when header' headers `Http_content_type = ["application/x-www-form-urlencoded"] ->
             content >>= fun s ->
-            Lwt.return (Uri.query_of_encoded s)
+            Lwt.return (concat_query_values (Uri.query_of_encoded s))
         | _ -> Lwt.return []
   }
 
@@ -141,7 +156,13 @@ let meth t = t.meth
 let uri t = t.uri
 let path t = Uri.path t.uri
 let contents t = t.content
-let param ?meth ?default t name =
+
+let param ?meth t name =
+  match List.Exceptionless.assoc name t.get_params with
+    | None -> t.post_params >|= List.Exceptionless.assoc name
+    | r -> Lwt.return r
+
+let param_exn ?meth ?default t name =
   Lwt.catch
     (fun () ->
       let rec loop = function
@@ -169,6 +190,7 @@ let param ?meth ?default t name =
     )
 
 let params_get t = t.get_params
+let params_post t = t.post_params
 
 let header t name = header' t.headers name
 

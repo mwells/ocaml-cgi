@@ -21,7 +21,7 @@ let _ =
     "try --help";
 
   (* Start the handler *)
-  Server.handler "hello" !addr !port (fun r ->
+  Server.handler_inet "hello" !addr !port (fun r ->
     Lwt.return
       { Response.status = `Ok;
         headers = [`Content_type "text/plain"];
