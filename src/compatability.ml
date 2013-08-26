@@ -8,5 +8,5 @@ module Scgi = struct
   module Scgi_request = Request
   module Scgi_response = Response
 
-  let handler = Server.handler
+  let handler = Server.handler_inet
 end
